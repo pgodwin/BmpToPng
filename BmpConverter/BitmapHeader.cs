@@ -23,7 +23,8 @@ namespace BmpConverter
         public int Reservered;
         public int DataOffset;
         
-        public int Size;
+        public int HeaderSize;
+        public HeaderVersion Version;
         public int Width;
         public int Height;
         public short Planes;
@@ -43,6 +44,14 @@ namespace BmpConverter
 
         public int NumberOfColours => (int)Math.Pow(2, BitCount);
 
+        /// <summary>
+        /// 1 channel for 8bit images, 3 for 24bit and 4 for 32bit.
+        /// </summary>
+        public int Channels => BitCount <= 8 ? 1 : BitCount == 24 ? 3 : 4; 
+
+        public int BitDepth => BitCount / Channels;
+
+      
         public BitmapHeader(Stream stream)
         {
             using (var reader = new BinaryReader(stream, Encoding.Default, true))
@@ -52,7 +61,12 @@ namespace BmpConverter
                 DataOffset = reader.ReadInt32();
 
                 // Header begins
-                Size = reader.ReadInt32();
+                HeaderSize = reader.ReadInt32();
+                Version = (HeaderVersion)HeaderSize;
+
+                if (Version != HeaderVersion.BITMAP_INFO_HEADER_SIZE)
+                    throw new Exception("Unsupported header version. Only 40byte headers supported for now.");
+
                 Width = reader.ReadInt32();
                 Height = reader.ReadInt32();
 
@@ -69,5 +83,51 @@ namespace BmpConverter
                 ColorsImportant = reader.ReadInt32();
             }
         }
+    }
+    
+    /// <summary>
+    /// Bitmap version based on the header size (first field).
+    /// </summary>
+    public enum HeaderVersion : int
+    {
+
+        /// <summary>
+        /// OS/2 V2
+        /// </summary>
+        OS2_V2_HEADER_SIZE = 64,
+
+        /// <summary>
+        /// OS/2 V2, first 16 bytes
+        /// </summary>
+        OS2_V2_HEADER_16_SIZE = 16,
+
+        /// <summary>
+        /// OS/2 V1
+        /// </summary>
+        BITMAP_CORE_HEADER_SIZE = 12,
+
+        /// <summary>
+        /// Windows 3.0 and later, most common format
+        /// </summary>
+        BITMAP_INFO_HEADER_SIZE = 40,
+        /// <summary>
+        /// Undocoumented, written by Photoshop
+        /// </summary>
+        BITMAP_V2_INFO_HEADER_SIZE = 52,
+        /// <summary>
+        /// Undocumented, written by Photoshop
+        /// </summary>
+        BITMAP_V3_INFO_HEADER_SIZE = 56,
+
+        /// <summary>
+        /// V4, Windows 95/NT 4 and later
+        /// </summary>
+        BITMAP_V4_INFO_HEADER_SIZE = 108,
+
+        /// <summary>
+        /// V5, Windows 98/2000 and later
+        /// </summary>
+        BITMAP_V5_INFO_HEADER_SIZE = 124
+
     }
 }

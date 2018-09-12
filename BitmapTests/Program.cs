@@ -14,17 +14,27 @@ namespace BitmapTests
         {
             foreach (var f in Directory.EnumerateFiles(".\\tests", "*.bmp"))
             {
-                using (var file = File.Open(f, FileMode.Open))
+                try
                 {
-                    Bitmap bmp = new Bitmap(file);
-                    Console.WriteLine("W: {0}, H: {1}", bmp.Header.Width, bmp.Header.Height);
-                    using (var png = File.Create(f + ".png"))
+                    using (var file = File.Open(f, FileMode.Open))
                     {
-                        bmp.ConvertToPng(png);
+                        Bitmap bmp = new Bitmap(file);
+                        Console.WriteLine("W: {0}, H: {1}", bmp.Header.Width, bmp.Header.Height);
+                    
+                        using (var png = File.Create(f + ".png"))
+                        {
+                            bmp.ConvertToPng(png);
+                        }
+                        Console.WriteLine($"{Path.GetFileName(f)} Success.");
                     }
                 }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"{Path.GetFileName(f)} Failed: {ex.Message}");
+                }
+
             }
-            
+            Console.ReadLine();
         }
     }
 }

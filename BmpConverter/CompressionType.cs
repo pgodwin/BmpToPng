@@ -27,6 +27,11 @@
         /// <summary>
         /// PNG Compression
         /// </summary>
-        PNG = 5
+        PNG = 5,
+
+        /// <summary>
+        /// RGBA Bitfield Masks
+        /// </summary>
+        ALPHA_BITFIELDS = 6
     }
 }
